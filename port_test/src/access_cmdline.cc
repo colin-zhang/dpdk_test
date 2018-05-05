@@ -271,6 +271,9 @@ string CmdLine::readLine()
 {
     string res("");
     int len = read(in_fd, &c, 1);
+    if  (len != 1) {
+        return res;
+    }
 
     if (c == '\n') {
         //回车键
