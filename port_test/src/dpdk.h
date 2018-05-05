@@ -10,6 +10,7 @@
 #include "dpdk_import.h"
 
 typedef struct rte_mempool* RteMemPoolPtr;
+typedef struct rte_mbuf* RteMbufPtr;
 typedef struct rte_eth_dev_info RteEthDevInfo;
 typedef struct rte_eth_conf RteEthConf;
 

@@ -3,6 +3,8 @@
 #include "dpdk.h"
 
 #include <string>
+#include <rte_ring.h>
+#include <rte_eth_ring.h>
 
 DpdkRte* DpdkRte::rte_ = nullptr;
 std::mutex DpdkRte::mutex_;
@@ -21,6 +23,13 @@ DpdkRte* DpdkRte::Instance()
     return rte_;
 }
 
+#define RING_SIZE 256
+#define NUM_RINGS 2
+#define SOCKET0 0
+
+struct rte_ring *ring[NUM_RINGS];
+int port0, port1;
+
 int DpdkRte::RteInit(int argc, char *argv[])
 {
     int ret = rte_eal_init(argc, argv);
@@ -28,6 +37,17 @@ int DpdkRte::RteInit(int argc, char *argv[])
     cap_core_num_ = 1;
     core_num = rte_lcore_count();
     port_num = rte_eth_dev_count();
+
+    if (port_num == 0) {
+        ring[0] = rte_ring_create("R0", RING_SIZE, SOCKET0, RING_F_SP_ENQ|RING_F_SC_DEQ);
+        ring[1] = rte_ring_create("R1", RING_SIZE, SOCKET0, RING_F_SP_ENQ|RING_F_SC_DEQ);
+/* create two ethdev's */
+        port0 = rte_eth_from_rings("net_ring0", ring, NUM_RINGS, ring, NUM_RINGS, SOCKET0);
+        port1 = rte_eth_from_rings("net_ring1", ring, NUM_RINGS, ring, NUM_RINGS, SOCKET0);
+        port_num += 2;
+    }
+
+
     mbuf_size_ = 0;
     argc -= ret;
     argv += ret;

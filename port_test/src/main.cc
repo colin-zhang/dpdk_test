@@ -47,6 +47,7 @@ struct EthRate
 };
 
 bool gStopRunning = false;
+bool gStopPeudo = false;
 DpdkRte* gDpdkRte = NULL;
 
 Sfrb<EthStatsArray>* gEthStatRbPtr = NULL;
@@ -136,6 +137,35 @@ std::string PortStat()
     return result;
 }
 
+
+extern struct rte_ring *ring[2];
+static int pseudo_send(__attribute__((unused)) void *ptr_data)
+{
+    uint32_t nb_rx_enqueued, freed, num;
+    RteMbufPtr mbufs[128];
+    RteMemPoolPtr mbuf_pool = rte_pktmbuf_pool_create(
+                                                              "", 
+                                                              1024,
+                                                              512, 
+                                                              0, 
+                                                              RTE_MBUF_DEFAULT_BUF_SIZE, 
+                                                              rte_socket_id());
+
+     rte_pktmbuf_alloc_bulk(mbuf_pool, mbufs, 128);
+
+     num = 128;
+
+
+    while (!gStopRunning) {
+        if (!gStopPeudo) {
+            nb_rx_enqueued = rte_ring_enqueue_bulk(ring[0], (void* const*)mbufs, num, &freed);
+        }
+
+          //rte_pktmbuf_alloc
+    }
+    return 0;
+}
+
 static int stat_slave(__attribute__((unused)) void *ptr_data)
 {
     EthStatsArray esa;
@@ -215,6 +245,7 @@ static void CmdLineProcess()
 {
     CmdLine cmd_line(CMD_PROMPT, ".test_history");
     cmd_line.addHints("exit");
+    cmd_line.addHints("stop_peudo");
     cmd_line.addHints("stat");
     cmd_line.addHints("help");
     cmd_line.addHints("version");
@@ -231,6 +262,8 @@ static void CmdLineProcess()
                 break;
             } else if (cmd == "stat") {
                 printf("%s\n", PortStat().c_str());
+            } else if (cmd == "stop_peudo") {
+                gStopPeudo = true;
             } else if (cmd == "help" || cmd == "?") {
                 help();
             } else if (cmd == "version") {
@@ -253,6 +286,7 @@ int main(int argc, char *argv[])
     gEthStatRbPtr = new Sfrb<EthStatsArray>(30);
 
     uint32_t id_core = rte_lcore_id();
+    printf("id_core : %d \n", id_core);
     for (int c = 0; c < gDpdkRte->CapPortNum(); c++) {
         id_core = rte_get_next_lcore(id_core, 1, 1);
         rte_eal_remote_launch(cap_slave, NULL, id_core);
@@ -260,6 +294,11 @@ int main(int argc, char *argv[])
 
     id_core = rte_get_next_lcore(id_core, 1, 1);
     rte_eal_remote_launch(stat_slave, NULL, id_core);
+
+//pseudo send
+    id_core = rte_get_next_lcore(id_core, 1, 1);
+    rte_eal_remote_launch(pseudo_send, NULL, id_core);
+//
 
     gStartTime = GetTimeUpNow();
 
