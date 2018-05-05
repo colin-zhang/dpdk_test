@@ -23,6 +23,7 @@ public:
     void backSpace(int n);
     void clearLine();
     void writeLine(std::string& buf);
+    void writeLine(const char* buf);
     void writeCmd();
     void toNline(int n);
     void addHints(std::string& hint);

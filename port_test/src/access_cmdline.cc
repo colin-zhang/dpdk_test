@@ -110,6 +110,12 @@ void CmdLine::writeLine(string& buf)
     write(out_fd, buf.c_str(), buf.size());
 }
 
+void CmdLine::writeLine(const char* buf)
+{
+    write(out_fd, buf, strlen(buf));
+    //fsync(out_fd);
+}
+
 void CmdLine::writeCmd()
 {
     writeLine(cmd);
@@ -381,10 +387,63 @@ string CmdLine::readLine()
         writeLine(cmd);
         Left(last_part.size());
         m_index++;
-    } else {
+    } else if (c == 0x0c) {
+        //Ctrl + l
+        //clear screen
+        writeLine("\033[2J\033[0;0H");
+        writeLine(prompt);
+        writeLine(cmd);
+    } else if (c == 0x15) {
+        //Ctrl + u
+        std::string sub_str = cmd.substr(m_index);
+        clearLine();
+        cmd = sub_str;
+        cmd_buffer = sub_str;
+        writeLine(sub_str);
+        Left(sub_str.size());
+        m_index = 0;
+    } else if (c == 0x01) {
+        //Ctrl + a
+        Left(m_index);
+        m_index = 0;
+    } else if (c == 0x05) {
+        //Ctrl + e
+        std::string sub_str = cmd.substr(m_index);
+        m_index = cmd.size();
+        writeLine(sub_str);
+    } else if (c == 0x0b) {
+        //Ctrl + k
+        std::string sub_str = cmd.substr(0, m_index);
+        clearLine();
+        cmd = sub_str;
+        cmd_buffer = sub_str;
+         writeLine(sub_str);
+        m_index = cmd.size();
+    } else if (c == 0x02) {
+        //Ctrl + b
+        if (m_index > 0) {
+            char b = '\b';
+            write(out_fd, &b, 1);
+            m_index--;
+        }
+    } else if (c == 0x06) {
+        //Ctrl + f
+        if (m_index < cmd.size()) {
+            char b = cmd[m_index];
+            write(out_fd, &b, 1);
+            m_index++;
+        }
+    } else if (c == 0x04) {
+        //Ctrl + d
+    } else if (c == 0x19) {
+        //Ctrl + y
+    } else if (c == 0x17) {
+        //Ctrl +  w
+    } 
+     else {
+        //just for fun, do not support
         //printf("\n%02x", c);
         //fflush(stdout);
-        printf("len = %d\n", len);
     }
     last_key = c;
     return res;
