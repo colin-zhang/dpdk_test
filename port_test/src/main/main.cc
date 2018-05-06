@@ -7,10 +7,10 @@
 #include "rte_ethdev.h"
 #include "rte_version.h"
 
-#include "dpdk.h"
-#include "access_cmdline.h"
-#include "utils.h"
-#include "sfrb.h"
+#include "port/dpdk.h"
+#include "util/access_cmdline.h"
+#include "util/utils.h"
+#include "util/sfrb.h"
 
 #define CMD_PROMPT "port_test > "
 #define PORT_TEST_VERSION "v0.0.2_r4"
@@ -144,12 +144,12 @@ static int pseudo_send(__attribute__((unused)) void *ptr_data)
     uint32_t nb_rx_enqueued, freed, num;
     RteMbufPtr mbufs[128];
     RteMemPoolPtr mbuf_pool = rte_pktmbuf_pool_create(
-                                                              "", 
-                                                              1024,
-                                                              512, 
-                                                              0, 
-                                                              RTE_MBUF_DEFAULT_BUF_SIZE, 
-                                                              rte_socket_id());
+                                                      "",
+                                                      1024,
+                                                      512,
+                                                      0,
+                                                      RTE_MBUF_DEFAULT_BUF_SIZE,
+                                                      rte_socket_id());
 
      rte_pktmbuf_alloc_bulk(mbuf_pool, mbufs, 128);
 
