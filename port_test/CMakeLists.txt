@@ -7,7 +7,7 @@ add_executable(port_test
     ${port_files}
     ${uitl_files} 
     ${main_files}
-)
+        src/main/pseudo_port.h src/main/port_stat.cc src/main/port_stat.h src/main/main.h src/main/packet_thread.cc src/main/packet_thread.h)
 
 set(DPDK_DRIVERS
   "-lrte_pmd_ixgbe -lrte_pmd_vmxnet3_uio -lrte_pmd_e1000"
