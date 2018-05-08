@@ -16,6 +16,7 @@ public:
     FileReader(std::string file_name);
     ~FileReader();
     int IsOK();
+    size_t GetSize();
 public:
     Mmap* buff;
 };

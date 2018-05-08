@@ -64,10 +64,9 @@ int PcapReader::ParsePacket(PcapPacket& packet, uint8_t* start, size_t len)
 int PcapReader::ReadPcapFile(std::string file_path) 
 {
     size_t offset = 0;
-    //uint8_t* buf;
     FileReader file_reader(file_path);
     if (!file_reader.IsOK()) {
-        printf("%s\n", "xxx");
+        printf("fail to read : %s\n", file_path.c_str());
         return -1;
     }
 
@@ -77,6 +76,7 @@ int PcapReader::ReadPcapFile(std::string file_path)
     offset += sizeof(pfh);
     PrintPcapFileHeader(&pfh);
 
+    int i = 0;
     while (offset <= file_reader.buff->length) {
         PcapPacketHeader pph;
         PcapPacket packet;
@@ -84,7 +84,11 @@ int PcapReader::ReadPcapFile(std::string file_path)
         packet.tv.tv_sec = pph.timestamp;
         packet.tv.tv_usec = pph.microseconds;
         //PrintPcapPacketHeader(&pph);
-        assert(pph.packet_length == pph.packet_length_wire);
+        // printf("%04d, %u, %u\n", ++i,  pph.packet_length, pph.packet_length_wire);
+        // assert(pph.packet_length == pph.packet_length_wire);
+        if (pph.packet_length != pph.packet_length_wire) {
+            break;
+        }
         offset += sizeof(pph);
 
         int ret = ParsePacket(packet, p + offset, pph.packet_length);

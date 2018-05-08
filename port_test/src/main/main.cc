@@ -111,6 +111,12 @@ DpdkRte* GetRte()
     return gDpdkRte;
 }
 
+#include <unistd.h>
+unsigned int ProcessingUnits()
+{
+    return ::sysconf(_SC_NPROCESSORS_ONLN);
+}
+
 
 int main(int argc, char *argv[])
 {
@@ -119,19 +125,27 @@ int main(int argc, char *argv[])
     gDpdkRte->PortsInit();
 
     uint32_t id_core = rte_lcore_id();
-    printf("id_core : %d \n", id_core);
+    printf("main::id_core : %d \n", id_core);
     for (int c = 0; c < gDpdkRte->CapPortNum(); c++) {
         id_core = rte_get_next_lcore(id_core, 1, 1);
-        rte_eal_remote_launch(cap_slave, NULL, id_core);
+        if (rte_eal_remote_launch(cap_slave, NULL, id_core) != 0) {
+            fprintf(stderr, "%2d, id_core[%d] %s\n", c, id_core, "can't launch");
+        }
     }
 
     id_core = rte_get_next_lcore(id_core, 1, 1);
-    rte_eal_remote_launch(stat_slave, NULL, id_core);
+    if (rte_eal_remote_launch(stat_slave, NULL, id_core) != 0) {
+        fprintf(stderr, "id_core[%d] %s\n",  id_core, "can't launch");
+    }
 
 //pseudo send
     id_core = rte_get_next_lcore(id_core, 1, 1);
-    rte_eal_remote_launch(pseudo_send, NULL, id_core);
+    if (rte_eal_remote_launch(pseudo_send, NULL, id_core) != 0) {
+        fprintf(stderr, "id_core[%d] %s\n",  id_core, "can't launch");
+    }
 //
+
+    printf("main::cores:%u, lcore_count:%d\n", ProcessingUnits(), rte_lcore_count());
 
     gStartTime = GetTimeUpNow();
 
