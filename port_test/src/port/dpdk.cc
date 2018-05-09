@@ -30,7 +30,7 @@ DpdkRte* DpdkRte::Instance()
 struct rte_ring *ring[NUM_RINGS];
 int port0, port1;
 
-int DpdkRte::RteInit(int argc, char *argv[])
+int DpdkRte::RteInit(int argc, char *argv[], bool secondry)
 {
     int ret = rte_eal_init(argc, argv);
     if (ret < 0) rte_exit(EXIT_FAILURE, "Invalid EAL parameters\n");
@@ -38,7 +38,7 @@ int DpdkRte::RteInit(int argc, char *argv[])
     core_num = rte_lcore_count();
     port_num = rte_eth_dev_count();
 
-    if (port_num == 0) {
+    if (port_num == 0 && !secondry) {
         ring[0] = rte_ring_create("R0", RING_SIZE, SOCKET0, RING_F_SP_ENQ|RING_F_SC_DEQ);
         ring[1] = rte_ring_create("R1", RING_SIZE, SOCKET0, RING_F_SP_ENQ|RING_F_SC_DEQ);
 /* create two ethdev's */
@@ -76,8 +76,9 @@ int DpdkRte::PortsInit()
         ports_.push_back(port);
         uint8_t socketid = port->SocketId();
         if (ports_mempools_.count(socketid) == 0) {
+            //how to calculate the total  memory ??
             unsigned n = (port->RxRings() * port->RxDesc() + port->TxRings() * port->TxDesc() + MBUF_CACHE_SIZE + 1024)
-                         * cap_core_num_;
+                         * cap_core_num_ * 16;
             n += mbuf_size_;
             printf("pktmbuf_pool size = %u, mbuf_size_=%d, cap_core_num_= %d\n", n, mbuf_size_, cap_core_num_);
             snprintf(pool_name, sizeof pool_name, "%s_%d", "DpdkRte_MBUF_POOL", i);
@@ -97,7 +98,7 @@ int DpdkRte::PortsInit()
     for (std::vector<DpdkPort*>::iterator x = ports_.begin(); x != ports_.end(); x++) {
         int rt = (*x)->Setup(ports_mempools_[(*x)->SocketId()]);
         if (rt != 0) {
-            rte_exit(EXIT_FAILURE, "fail to get port name \n");
+            rte_exit(EXIT_FAILURE, "fail to Setup \n");
         }
     }
     return 0;
@@ -134,8 +135,8 @@ DpdkPort::DpdkPort(uint8_t port_id, uint16_t rx_rings, uint16_t tx_rings)
     : port_id_(port_id),
       rx_rings_(rx_rings),
       tx_rings_(tx_rings),
-      num_rxdesc_(512),
-      num_txdesc_(512)
+      num_rxdesc_(4096),
+      num_txdesc_(4096)
 {
     char dev_name[128];
     port_conf_.rxmode.mq_mode = ETH_MQ_RX_RSS;
@@ -146,7 +147,7 @@ DpdkPort::DpdkPort(uint8_t port_id, uint16_t rx_rings, uint16_t tx_rings)
     port_conf_.txmode.mq_mode = ETH_MQ_TX_NONE;
 
     if (rte_eth_dev_is_valid_port(port_id_) == 0) {
-        rte_exit(EXIT_FAILURE, "fail to get port name \n");
+        rte_exit(EXIT_FAILURE, "rte_eth_dev_is_valid_port \n");
     }
 
     if (rte_eth_dev_get_name_by_port(port_id_, dev_name) != 0) {

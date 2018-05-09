@@ -67,6 +67,14 @@ int CalaRate(EthStatsArray* est1, EthStatsArray* est0, EthRate* er, int i)
     return 0;
 }
 
+void PortStatReset()
+{
+    for (int i = 0; i< GetRte()->port_num; i++)
+    {
+        rte_eth_stats_reset(i);
+    }
+}
+
 std::string PortStat()
 {
     int i = 0;

@@ -7,7 +7,25 @@ add_executable(port_test
     ${port_files}
     ${uitl_files} 
     ${main_files}
-        src/main/pseudo_port.h src/main/port_stat.cc src/main/port_stat.h src/main/main.h src/main/packet_thread.cc src/main/packet_thread.h)
+)
+
+add_executable(dpdk_mempool 
+    ${port_files}
+    ${uitl_files} 
+   src/tools/dpdk_mempool.cc
+)
+
+add_executable(dpdk_ifconfig 
+    ${port_files}
+    ${uitl_files} 
+   src/tools/dpdk_ifconfig.cc
+)
+
+add_executable(dpdk_dump
+    ${port_files}
+    ${uitl_files} 
+   src/tools/dpdk_dump.cc
+)
 
 set(DPDK_DRIVERS
   "-lrte_pmd_ixgbe -lrte_pmd_vmxnet3_uio -lrte_pmd_e1000"
@@ -27,3 +45,12 @@ add_definitions(-msse4)
 
 target_link_libraries(port_test ${DPDK_LIBS})
 target_link_libraries(port_test pthread dl m numa)
+
+target_link_libraries(dpdk_mempool ${DPDK_LIBS})
+target_link_libraries(dpdk_mempool pthread dl m numa)
+
+target_link_libraries(dpdk_ifconfig ${DPDK_LIBS})
+target_link_libraries(dpdk_ifconfig pthread dl m numa)
+
+target_link_libraries(dpdk_dump ${DPDK_LIBS})
+target_link_libraries(dpdk_dump pthread dl m numa)

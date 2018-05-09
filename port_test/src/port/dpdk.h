@@ -62,7 +62,7 @@ private:
     std::string dev_name_;
     int rx_rings_;
     int tx_rings_;
-    int num_rxdesc_;
+    int num_rxdesc_;    //网卡硬件队列缓存
     int num_txdesc_;
     RteEthDevInfo dev_info_;
     RteEthConf port_conf_;
@@ -75,7 +75,7 @@ public:
 
     static DpdkRte* Instance();
 
-    int RteInit(int argc, char *argv[]);
+    int RteInit(int argc, char *argv[], bool secondry);
 
     void PrintInfo();
 

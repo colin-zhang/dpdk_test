@@ -29,14 +29,14 @@ int pseudo_send(__attribute__((unused)) void *ptr_data)
     num = 128;
 
 
-    PcapReader pcap_reader(1);
+    //PcapReader pcap_reader(1);
 
-    pcap_reader.ReadPcapFile("ryf.pcap");
+    //pcap_reader.ReadPcapFile("ryf.pcap");
 
 
     while (!CheckStoping()) {
         if (!gStopPeudo) {
-            nb_rx_enqueued = rte_ring_enqueue_bulk(ring[0], (void* const*)mbufs, num, &freed);
+            //nb_rx_enqueued = rte_ring_enqueue_bulk(ring[0], (void* const*)mbufs, num, &freed);
         }
 
           //rte_pktmbuf_alloc

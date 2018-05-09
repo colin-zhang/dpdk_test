@@ -76,6 +76,7 @@ static void CmdLineProcess()
     cmd_line.addHints("exit");
     cmd_line.addHints("stop_peudo");
     cmd_line.addHints("stat");
+    cmd_line.addHints("reset_stat");
     cmd_line.addHints("help");
     cmd_line.addHints("version");
     cmd_line.addHints("uptime");
@@ -91,6 +92,8 @@ static void CmdLineProcess()
                 break;
             } else if (cmd == "stat") {
                 printf("%s\n", PortStat().c_str());
+            } else if (cmd == "reset_stat") {
+                PortStatReset();
             } else if (cmd == "stop_peudo") {
                 PseudoSetStop(true);
             } else if (cmd == "help" || cmd == "?") {
@@ -121,18 +124,18 @@ unsigned int ProcessingUnits()
 int main(int argc, char *argv[])
 {
     gDpdkRte = DpdkRte::Instance();
-    gDpdkRte->RteInit(argc, argv);
+    gDpdkRte->RteInit(argc, argv, false);
     gDpdkRte->PortsInit();
 
     uint32_t id_core = rte_lcore_id();
-    printf("main::id_core : %d \n", id_core);
+    printf("main::id_core:%d , first lcore:%d\n", rte_get_master_lcore(), id_core);
     for (int c = 0; c < gDpdkRte->CapPortNum(); c++) {
         id_core = rte_get_next_lcore(id_core, 1, 1);
         if (rte_eal_remote_launch(cap_slave, NULL, id_core) != 0) {
             fprintf(stderr, "%2d, id_core[%d] %s\n", c, id_core, "can't launch");
         }
     }
-
+    
     id_core = rte_get_next_lcore(id_core, 1, 1);
     if (rte_eal_remote_launch(stat_slave, NULL, id_core) != 0) {
         fprintf(stderr, "id_core[%d] %s\n",  id_core, "can't launch");
@@ -157,6 +160,7 @@ int main(int argc, char *argv[])
             return -1;
         }
     }
+    //rte_eal_mp_wait_lcore();
     delete gDpdkRte;
     return 0;
 }
