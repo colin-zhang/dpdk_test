@@ -5,7 +5,10 @@
 #include <stdexcept>
 
 #include "port/dpdk.h"
+
+#if RTE_VER_YEAR >= 17
 #include "rte_bus_pci.h"
+#endif
 
 inline std::string format(const char* fmt, ...)
 {
@@ -94,13 +97,41 @@ void dpdkctl_port_show()
 
 int main(int argc, char** argv)
 {
+
+    int ret;
+  int i;
+  char c_flag[] = "-c1";
+  char n_flag[] = "-n4";
+  char mp_flag[] = "--proc-type=secondary";
+  char *argp[argc + 3];
+  uint8_t nb_ports;
+
+  argp[0] = argv[0];
+  argp[1] = c_flag;
+  argp[2] = n_flag;
+  argp[3] = mp_flag;
+
+  for (i = 1; i < argc; i++)
+    argp[i + 3] = argv[i];
+
+  argc += 3;
+
+  ret = rte_eal_init(argc, argp);
+  if (ret < 0)
+    rte_panic("Cannot init EAL\n");
+
+  return 0;
+
+
   int innner_argc = 2;
   const char* innner_argv[2] = {
     argv[0],
     "--proc-type=secondary"
   };
-
+  
+#if RTE_VER_YEAR >= 17
     rte_log_set_global_level(RTE_LOG_EMERG);
+#endif
     DpdkRte::Instance()->RteInit(innner_argc, (char**)innner_argv, true);
     dpdkctl_port_show();
 }

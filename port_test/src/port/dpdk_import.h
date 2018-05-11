@@ -9,6 +9,7 @@
 #include "rte_lcore.h"
 #include "rte_errno.h"
 #include "rte_log.h"
+#include "rte_version.h"
 
 
 #endif

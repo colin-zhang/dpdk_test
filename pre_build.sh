@@ -23,13 +23,16 @@ pre_env()
 }
 
 #[dpdk 17.11.2] (https://fast.dpdk.org/rel/dpdk-17.11.2.tar.xz)
+#[dpdk 16.11.6] (https://fast.dpdk.org/rel/dpdk-16.11.6.tar.xz)
 build_dpdk()
 {
-    build_dir=$VENDORS_DIR/dpdk-stable-17.11.2
+    version=$1
+    echo "building dpdk $version"
+    build_dir=$VENDORS_DIR/dpdk-stable-$version
 
     if [[ ! -d $build_dir ]]; then
-        wget https://fast.dpdk.org/rel/dpdk-17.11.2.tar.xz   -O  $VENDORS_DIR/dpdk-17.11.2.tar.xz
-        tar -xf $VENDORS_DIR/dpdk-17.11.2.tar.xz -C $VENDORS_DIR
+        wget https://fast.dpdk.org/rel/dpdk-$version.tar.xz   -O  $VENDORS_DIR/dpdk-$version.tar.xz
+        tar -xf $VENDORS_DIR/dpdk-$version.tar.xz -C $VENDORS_DIR
         #statements
     fi
 
@@ -97,4 +100,4 @@ pre_env
 get_hyperscan
 build_hyperscan
 build_libnet
-build_dpdk
+build_dpdk 16.11.6

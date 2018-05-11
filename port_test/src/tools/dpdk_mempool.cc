@@ -36,7 +36,9 @@ int main(int argc, char** argv)
     "--proc-type=secondary"
   };
 
-  //rte_log_set_global_level(RTE_LOG_EMERG);
+#if RTE_VER_YEAR >= 17
+    rte_log_set_global_level(RTE_LOG_EMERG);
+#endif
   gDpdkRte = DpdkRte::Instance();
   gDpdkRte->RteInit(innner_argc, (char**)innner_argv, true);
   //dpdk::dpdk_boot(innner_argc, (char**)innner_argv);

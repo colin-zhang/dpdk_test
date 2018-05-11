@@ -12,9 +12,16 @@ typedef uint16_t (*rte_rx_callback_fn)(uint16_t port, uint16_t queue,
   void *user_param);
 
 */
+
+#if RTE_VER_YEAR >= 17
 uint16_t callback(uint16_t port, uint16_t queue,
     struct rte_mbuf *pkts[], uint16_t nb_pkts,
     uint16_t max_pkts, void *user_param)
+#else
+uint16_t callback(uint8_t port, uint16_t queue,
+    struct rte_mbuf *pkts[], uint16_t nb_pkts,
+    uint16_t max_pkts, void *user_param)
+#endif
 {
   for (size_t i=0; i<nb_pkts; i++) {
     rte_pktmbuf_dump(stdout, pkts[i], 0);
@@ -36,7 +43,9 @@ int main(int argc, char** argv)
     "--proc-type=secondary"
   };
 
-  //rte_log_set_global_level(RTE_LOG_EMERG);
+#if RTE_VER_YEAR >= 17
+    rte_log_set_global_level(RTE_LOG_EMERG);
+#endif
   DpdkRte::Instance()->RteInit(innner_argc, (char**)innner_argv, true);
 
   const size_t pid = atoi(argv[1]);
