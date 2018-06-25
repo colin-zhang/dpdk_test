@@ -1,4 +1,6 @@
 #!/bin/sh
+set -e
+
 kPWD=`pwd`
 kUpDir=`dirname $kPWD`
 kOutPutDir=local
