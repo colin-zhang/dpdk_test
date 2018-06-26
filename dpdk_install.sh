@@ -11,10 +11,15 @@ vFLAG_KNI=0
 vDPDK_CONFIG=""
 vDPDK_VERSON="16.11.7"
 
-declare -A vNameMap=(["18.05"]="dpdk-18.05" \
+declare -A vNameMap=(\
+                    ["18.05"]="dpdk-18.05" \
                     ["18.02.2"]="dpdk-stable-18.02.2" \
                     ["17.11.3"]="dpdk-stable-17.11.3" \
-                    ["16.11.7"]="dpdk-stable-16.11.7")
+                    ["16.11.7"]="dpdk-stable-16.11.7" \
+                    ["16.11.6"]="dpdk-stable-16.11.6" \
+                    ["16.11.5"]="dpdk-stable-16.11.5" \
+                    ["16.11.4"]="dpdk-stable-16.11.4" \
+                    )
 
 down_dpdk_all()
 {
@@ -23,13 +28,14 @@ down_dpdk_all()
     done
 }
 
+#http://static.dpdk.org/rel/dpdk-16.11.3.tar.xz
 down_dpdk()
 {
     mkdir -p $kUpDir/vendors
     ver=$1
 
     if [[ ! -f $kUpDir/vendors/dpdk-$ver.tar.xz ]]; then
-        wget https://fast.dpdk.org/rel/dpdk-$ver.tar.xz -O  $kUpDir/vendors/dpdk-$ver.tar.xz
+        wget http://static.dpdk.org/rel/dpdk-$ver.tar.xz -O  $kUpDir/vendors/dpdk-$ver.tar.xz
     fi
 
     if [[ ! -d $kUpDir/vendors/dpdk-$ver ]]; then
@@ -61,6 +67,14 @@ build_dpdk()
     cd $build_dir
     echo "dpdk dir :$build_dir"
     make -j16 install T=$kRTE_SDK_TARGET DESTDIR=$kOutPutDir $vDPDK_CONFIG
+    cd  $kPWD
+}
+
+build_dpdk_example()
+{
+    build_dir=$kPWD/dpdk
+    cd $build_dir
+    make -j16 T=$kRTE_SDK_TARGET $vDPDK_CONFIG O=$kPWD/examples examples 
     cd  $kPWD
 }
 
@@ -100,6 +114,10 @@ parse_args()
 
         if [ $arg == "download" ]; then    
             down_dpdk_all;exit 0;
+        fi        
+
+        if [ $arg == "example" ]; then    
+            build_dpdk_example;exit 0;
         fi
     done
 }
