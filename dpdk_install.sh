@@ -15,10 +15,12 @@ declare -A vNameMap=(\
                     ["18.05"]="dpdk-18.05" \
                     ["18.02.2"]="dpdk-stable-18.02.2" \
                     ["17.11.3"]="dpdk-stable-17.11.3" \
+                    ["17.05.2"]="dpdk-stable-17.05.2" \
                     ["16.11.7"]="dpdk-stable-16.11.7" \
                     ["16.11.6"]="dpdk-stable-16.11.6" \
                     ["16.11.5"]="dpdk-stable-16.11.5" \
                     ["16.11.4"]="dpdk-stable-16.11.4" \
+                    ["16.11.3"]="dpdk-stable-16.11.3" \
                     )
 
 down_dpdk_all()
@@ -27,6 +29,22 @@ down_dpdk_all()
         down_dpdk $i
     done
 }
+
+clear_all_dpdk_files()
+{
+    for i in ${!vNameMap[@]}; do
+        the_dir=$kUpDir/vendors/dpdk-$i
+        if [[ -d $the_dir ]]; then
+            echo "remove $the_dir ? yes/no : "
+            read ans
+            if [[ "x"$ans == "xyes" ]]; then
+                echo "remove $the_dir"
+                rm -rf $kUpDir/vendors/dpdk-$i
+            fi
+        fi
+    done
+}
+
 
 #http://static.dpdk.org/rel/dpdk-16.11.3.tar.xz
 down_dpdk()
@@ -119,6 +137,12 @@ parse_args()
         if [ $arg == "example" ]; then    
             build_dpdk_example;exit 0;
         fi
+
+        if [ $arg == "cleanall" ]; then    
+            clear_all_dpdk_files;exit 0;
+        fi
+
+
     done
 }
 
